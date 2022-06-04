@@ -1,6 +1,12 @@
 App = {
+
+    contracts: [],
+
     load: async () => {
         await App.loadWeb3()
+        await App.loadAccount()
+        await App.loadContract()
+        await App.render()
     },
 
     loadWeb3: async () => {
@@ -33,11 +39,57 @@ App = {
         else {
           console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
         }
+    },
+
+    loadAccount: async () => {
+        accs = await web3.eth.getAccounts()
+        App.account = accs[0]
+        //console.log(App.account)
+    },
+
+    loadContract: async () => {
+        const todoList = await $.getJSON('TodoList.json')
+        App.contracts.TodoList = TruffleContract(todoList)            
+        App.contracts.TodoList.setProvider(App.web3Provider)
+        App.todoList = await App.contracts.TodoList.deployed
+    },
+
+    render: async () => {
+        // Prevent double render
+        if(App.loading) {
+            return
+        }
+
+        // Update app loading state
+        App.setLoading(true)
+
+        $('#account').html(App.account)
+
+        // Update loading state
+        App.setLoading(false)
+    },
+
+    renderTasks: async () => {
+
+    },
+
+    setLoading: (boolean) => {
+        App.loading = boolean
+        const loader = $('#loader')
+        const content = $('#content')
+        if(boolean){
+            loader.show()
+            content.hide()
+        }else{
+            loader.hide()
+            content.show()
+        }
     }
 }
 
 $( () => {
     $(window).load( () => {
         App.load()
+        // console.log(App)
     })
 })
