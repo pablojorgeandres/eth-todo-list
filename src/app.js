@@ -6,7 +6,7 @@ App = {
         await App.loadWeb3()
         await App.loadAccount()
         await App.loadContract()
-        await App.render()
+        await App.render() 
     },
 
     loadWeb3: async () => {
@@ -63,14 +63,45 @@ App = {
         // Update app loading state
         App.setLoading(true)
 
+        // Render account
         $('#account').html(App.account)
+
+        // Render Tasks
+        await App.renderTasks()
 
         // Update loading state
         App.setLoading(false)
     },
 
     renderTasks: async () => {
+        // Load total tasks from bch
+        const taskCount = await App.todoList.length
+        const taskTemplate = $('.taskTemplate')
+        const taskContent = ''
+        const taskId = 0
+        const taskCompleted = false
 
+        // Render each task
+        for (let i = 1; i < taskCount; i++) {
+            const task = await App.todoList.tasks(i)
+            taskId = task[0].toNumber()
+            taskContent = task[1]
+            taskCompleted = task[2]
+        }
+
+        // Create the html for the task
+        const $newTaskTemplate = taskTemplate.clone()
+        $newTaskTemplate.find('.content').html(taskContent)
+        $newTaskTemplate.find('input')
+                        .prop('name', taskId)
+                        .prop('checked', taskCompleted)
+                        //.on('click', App.toggleCompleted)
+
+        // Put the task in the correct list
+        taskCompleted ? $('#completedTaskList').append($newTaskTemplate) : $('#taskList').append($newTaskTemplate)
+        
+        // Show task
+        $newTaskTemplate.show()
     },
 
     setLoading: (boolean) => {
